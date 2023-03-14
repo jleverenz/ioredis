@@ -73,8 +73,8 @@ export class RedisCoreModule implements OnApplicationShutdown {
       ];
     }
 
-    return [ 
-      this.createAsyncOptionsProvider(options, connection), 
+    return [
+      this.createAsyncOptionsProvider(options, connection),
       { provide: options.useClass, useClass: options.useClass },
     ];
   }

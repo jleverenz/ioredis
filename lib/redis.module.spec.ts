@@ -32,7 +32,7 @@ describe('RedisModule', () => {
           name: '1',
           host: '127.0.0.1',
           port: 6379,
-          password: '123456',  
+          password: '123456',
         }
       })],
     }).compile();
