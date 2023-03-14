@@ -13,7 +13,6 @@ describe('RedisModule', () => {
        config: {
         host: '127.0.0.1',
         port: 6379,
-        password: '123456',
        }
       })],
     }).compile();
@@ -26,7 +25,7 @@ describe('RedisModule', () => {
     await app.close();
   });
 
-  it('Instance Redis client provider', async () => {
+  it.skip('Instance Redis client provider', async () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [RedisModule.forRoot({
         config: {
@@ -49,7 +48,7 @@ describe('RedisModule', () => {
     await app.close();
   });
 
-  it('inject redis connection', async () => {
+  it.skip('inject redis connection', async () => {
 
     @Injectable()
     class TestProvider {

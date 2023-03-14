@@ -1,10 +1,16 @@
-import { DynamicModule, Module, Global, Provider } from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
+import { DynamicModule, Module, Global, Provider, OnApplicationShutdown } from '@nestjs/common';
 import { RedisModuleAsyncOptions, RedisModuleOptions, RedisModuleOptionsFactory } from './redis.interfaces';
 import { createRedisConnection, getRedisOptionsToken, getRedisConnectionToken } from './redis.utils'
+import { Redis } from 'ioredis';
 
 @Global()
 @Module({})
-export class RedisCoreModule {
+export class RedisCoreModule implements OnApplicationShutdown {
+
+  constructor(private readonly moduleRef: ModuleRef) {}
+
+  static tokens: string[] = [];
 
   /* forRoot */
   static forRoot(options: RedisModuleOptions, connection?: string): DynamicModule {
@@ -14,8 +20,11 @@ export class RedisCoreModule {
       useValue: options,
     };
 
+    const connectionToken = getRedisConnectionToken(connection);
+    RedisCoreModule.tokens.push(connectionToken);
+
     const redisConnectionProvider: Provider = {
-      provide: getRedisConnectionToken(connection),
+      provide: connectionToken,
       useValue: createRedisConnection(options),
     };
 
@@ -92,5 +101,28 @@ export class RedisCoreModule {
       },
       inject: [options.useClass || options.useExisting],
     };
+  }
+
+
+  async onApplicationShutdown(): Promise<void> {
+    const waitForStatus = async (redis: Redis, status: string) => {
+      let times = 0;
+      while (redis.status != status && times < (3000 / 200)) {
+        times++;
+        await new Promise((resolve) => setTimeout(resolve, 200));
+      }
+
+      if (redis.status != status) {
+        throw "Never reached redis state '${status}' within 3 seconds";
+      }
+    }
+
+    for (let i = 0; i < RedisCoreModule.tokens.length; ++i) {
+      const redisConn = await this.moduleRef.resolve<Redis>(RedisCoreModule.tokens[i]);
+      // Can't quit before ready.
+      await waitForStatus(redisConn, 'ready');
+      await redisConn.quit();
+      await waitForStatus(redisConn, 'end');
+    }
   }
 }
