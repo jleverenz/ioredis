@@ -124,5 +124,8 @@ export class RedisCoreModule implements OnApplicationShutdown {
       await redisConn.quit();
       await waitForStatus(redisConn, 'end');
     }
+
+    // reset state
+    RedisCoreModule.tokens = [];
   }
 }
