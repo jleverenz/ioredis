@@ -1,17 +1,13 @@
-require('ts-node/register');
-
 module.exports = {
-  'moduleFileExtensions': [
+  moduleFileExtensions: [
     'js',
     'json',
     'ts',
   ],
-  'rootDir': 'lib',
-  'testRegex': '/lib/.*\\.spec\\.(ts|js)$',
-  'globals': {
-    'ts-jest': {
-      'tsConfig': 'tsconfig.json'
-    }
+  rootDir: 'lib',
+  testRegex: '/lib/.*\\.spec\\.(ts|js)$',
+  transform: {
+    '^.+\\.ts$': 'ts-jest',
   },
-  'preset': 'ts-jest',
+  preset: 'ts-jest',
 };
